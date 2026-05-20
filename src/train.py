@@ -53,7 +53,7 @@ def train_all_models(X_train, y_train):
 
         # Save model
         joblib.dump(model, f'models/{name}.pkl')
-        print(f"Saved → models/{name}.pkl ✅")
+        print(f"Saved → models/{name}.pkl ")
 
     return trained_models
 
@@ -64,15 +64,13 @@ if __name__ == "__main__":
         'data/raw/hypothyroid.data'
     )
 
-    print("\n========================================")
+    
     print("        STARTING MODEL TRAINING")
-    print("========================================")
 
     trained_models = train_all_models(X_train, y_train)
 
-    print("\n========================================")
     print("     ALL 3 MODELS TRAINED AND SAVED")
-    print("========================================")
+    
     print("Files saved in models/ folder:")
     print("  - logistic_regression.pkl")
     print("  - random_forest.pkl")

@@ -7,7 +7,6 @@ import os
 # ─── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Hypothyroidism CDSS",
-    page_icon="🏥",
     layout="wide"
 )
 
@@ -26,9 +25,6 @@ def load_artifacts():
 models, scaler = load_artifacts()
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
-st.sidebar.image("https://img.icons8.com/color/96/hospital.png", width=60)
-st.sidebar.title("CDSS Settings")
-
 selected_model = st.sidebar.selectbox(
     "Select Model",
     list(models.keys())
@@ -44,22 +40,12 @@ perf = {
 for k, v in perf[selected_model].items():
     st.sidebar.metric(k, v)
 
-st.sidebar.markdown("---")
-st.sidebar.caption(
-    "⚕️ This tool assists healthcare providers. "
-    "It does NOT replace clinical diagnosis."
-)
-
 # ─── Header ───────────────────────────────────────────────────────────────────
-st.title("🏥 Hypothyroidism Clinical Decision Support System")
-st.markdown(
-    "Enter patient data below and click **Run Prediction** "
-    "to assess the risk of hypothyroidism."
-)
+st.title("Hypothyroidism Clinical Decision Support System")
 st.markdown("---")
 
 # ─── Input Form ───────────────────────────────────────────────────────────────
-st.subheader("📋 Patient Data Entry")
+st.subheader(" Patient Data Entry")
 
 col1, col2, col3 = st.columns(3)
 
@@ -75,8 +61,18 @@ with col1:
 
 with col2:
     st.markdown("**Medical History**")
-    sick            = st.selectbox("Currently Sick?",           ["No", "Yes"])
-    pregnant        = st.selectbox("Pregnant?",                 ["No", "Yes"])
+    sick            = st.selectbox("Currently Sick?",          ["No", "Yes"])
+
+    # ── Conditional Pregnancy Field ──────────────────────────
+    if sex == "Female":
+        pregnant = st.selectbox("Pregnant?", ["No", "Yes"])
+    else:
+        st.markdown("""
+        
+        """, unsafe_allow_html=True)
+        pregnant = "No"
+    # ─────────────────────────────────────────────────────────
+
     thyroid_surgery = st.selectbox("Thyroid Surgery History?",  ["No", "Yes"])
     I131_treatment  = st.selectbox("I131 Treatment?",           ["No", "Yes"])
     lithium         = st.selectbox("On Lithium?",               ["No", "Yes"])
@@ -91,10 +87,10 @@ with col3:
     query_hyperthyroid = st.selectbox("Query Hyperthyroid?", ["No", "Yes"])
 
     st.markdown("**Lab Values**")
-    TSH = st.number_input("TSH (mIU/L)",   0.0, 200.0, 2.5,  step=0.1)
-    T3  = st.number_input("T3  (nmol/L)",  0.0,  20.0, 1.8,  step=0.1)
+    TSH = st.number_input("TSH (mIU/L)",   0.0, 200.0, 2.5,   step=0.1)
+    T3  = st.number_input("T3  (nmol/L)",  0.0,  20.0, 1.8,   step=0.1)
     TT4 = st.number_input("TT4 (nmol/L)",  0.0, 400.0, 100.0, step=1.0)
-    T4U = st.number_input("T4U (ratio)",   0.0,   5.0, 1.0,  step=0.1)
+    T4U = st.number_input("T4U (ratio)",   0.0,   5.0, 1.0,   step=0.1)
 
 st.markdown("---")
 
@@ -124,7 +120,7 @@ def build_input():
     ]])
     return scaler.transform(features)
 
-if st.button("🔍 Run Prediction", use_container_width=True, type="primary"):
+if st.button("Run Prediction", use_container_width=True, type="primary"):
 
     input_data  = build_input()
     model       = models[selected_model]
@@ -132,27 +128,27 @@ if st.button("🔍 Run Prediction", use_container_width=True, type="primary"):
     probability = model.predict_proba(input_data)[0][1]
 
     st.markdown("---")
-    st.subheader("📊 Prediction Result")
+    st.subheader("Prediction Result")
 
     res_col1, res_col2 = st.columns([2, 1])
 
     with res_col1:
         if prediction == 1:
             if probability >= 0.7:
-                st.error("### ⚠️ HIGH RISK — Hypothyroidism Likely")
+                st.error("###  HIGH RISK — Hypothyroidism Likely")
                 recommendation = (
                     "**Immediate action recommended:** Order full thyroid "
                     "function panel (TSH, Free T3, Free T4). "
                     "Refer to endocrinologist."
                 )
             else:
-                st.warning("### 🔶 MODERATE RISK — Further Testing Advised")
+                st.warning("###  MODERATE RISK — Further Testing Advised")
                 recommendation = (
                     "**Suggested action:** Repeat TSH test in 4–6 weeks. "
                     "Monitor symptoms. Consider specialist referral."
                 )
         else:
-            st.success("### ✅ LOW RISK — Normal Thyroid Function Suggested")
+            st.success("### LOW RISK — Normal Thyroid Function Suggested")
             recommendation = (
                 "**Suggested action:** Routine follow-up. "
                 "Re-evaluate if symptoms develop or worsen."
@@ -169,7 +165,7 @@ if st.button("🔍 Run Prediction", use_container_width=True, type="primary"):
         st.caption(f"Model used: {selected_model}")
 
     # Detailed probability breakdown
-    with st.expander("🔬 Detailed Probability Breakdown"):
+    with st.expander(" Detailed Probability Breakdown"):
         prob_df = pd.DataFrame({
             'Class':       ['Normal', 'Hypothyroid'],
             'Probability': [
@@ -180,13 +176,13 @@ if st.button("🔍 Run Prediction", use_container_width=True, type="primary"):
         st.dataframe(prob_df, use_container_width=True, hide_index=True)
 
     st.info(
-        "⚕️ **Disclaimer:** This system is a decision support tool only. "
+        " **Disclaimer:** This system is a decision support tool only. "
         "Final diagnosis must be confirmed by a qualified healthcare professional "
         "using laboratory tests and clinical examination."
     )
 
 # ─── About section ────────────────────────────────────────────────────────────
-with st.expander("ℹ️ About This System"):
+with st.expander("About This System"):
     st.markdown("""
     **Machine Learning-Based CDSS for Hypothyroidism Detection**
 
